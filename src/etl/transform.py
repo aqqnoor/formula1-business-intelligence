@@ -1,51 +1,39 @@
 import pandas as pd
 
 def convert_types(df):
-    if "date" in df.columns:
-        df["date"] = pd.to_datetime(df["date"], errors="coerce")
-    if "dob" in df.columns:
-        df["dob"] = pd.to_datetime(df["dob"], errors="coerce")
-    if "fp1_date" in df.columns:
-        df["fp1_date"] = df["fp1_date"].to_datetime("datetime64[ns]", errors="coerce")
+    data_columns = ["date", "dob", "fp1_date", "fp2_date", "fp3_date", "quali_date", "sprint_date"]
 
-    if "fp2_date" in df.columns:
-        df["fp2_date"] = df["fp2_date"].to_datetime("datetime64[ns]", errors="coerce")
-    if "fp3_date" in df.columns:
-        df["fp3_date"] = df["fp3_date"].to_datetime("datetime64[ns]", errors="coerce")
-    if "quali_date" in df.columns:
-        df["quali_date"] = df["quali_date"].to_datetime("datetime64[ns]", errors="coerce")
-    if "sprint_date" in df.columns:
-        df["sprint_date"] = df["sprint_date"].to_datetime("datetime64[ns]", errors="coerce")
-
-    return df
+    for col in data_columns:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col], errors="coerce")
     
 
+
     if "number" in df.columns:
-        df["number"] = df["number"].to_datetime("Int64", errors="coerce")
+        df["number"] = pd.to_numeric(df["number"], errors="coerce").astype("Int64")
 
     if "points" in df.columns:
-        df["points"] = df["points"].to_datetime(float, errors="coerce")
+        df["points"] = pd.to_numeric(df["points"], errors="coerce").astype("Float64")
+    
+    if "position" in df.columns:
+        df["position"] = pd.to_numeric(df["position"], errors="coerce").astype("Int64")
+    if "rank" in df.columns:
+        df["rank"] = pd.to_numeric(df["rank"], errors="coerce").astype("Int64")
+    if "laps" in df.columns:
+        df["laps"] = pd.to_numeric(df["laps"], errors="coerce").astype("Int64")
 
-
-def handle_missing(df):
-    df = df.dropna(subset=["date", "dob"])
     return df
+
+
 
 def remove_duplicates(df):
     return df.drop_duplicates()
 
-def clean_text(df):
-    df["name"] = df["name"].str.strip().str.title()
-    return df
-def validate_date(df):
-    df = df[df["date"] >= df["dob"]]
-    
-    return df
+
 
 def transform(df):
     df = convert_types(df)
-    df = handle_missing(df)
     df = remove_duplicates(df)
-    df = clean_text(df)
-    df = validate_date(df)
+
+
     return df
