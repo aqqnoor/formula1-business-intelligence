@@ -1,0 +1,5 @@
+SELECT * FROM drivers LIMIT 10;
+
+SELECT * FROM races LIMIT 10;
+
+SELECT COUNT(*) FROM results;
