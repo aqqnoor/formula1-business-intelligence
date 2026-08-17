@@ -1,22 +1,50 @@
-from src.etl.extract import extract
-from src.etl.transform import transform
-from src.etl.logger import report
-from src.etl.load import load
-tables = extract("data/raw")
+from pathlib import Path
 
-for name, df in tables.items():
+from .extract import extract
+from .transform import transform
+from .load import load
+from .logger import logger, report
 
-    before = len(df)
 
-    df, duplicates_removed, missing = transform(df)
+def main():
+    try:
+        base_dir = Path(__file__).resolve().parents[2]
+        data_path = base_dir / "data" / "raw"
 
-    after = len(df)
+        tables = extract(data_path)
 
-    report(
-        table_name=name,
-        before=before,
-        after=after,
-        duplicates_removed=duplicates_removed,
-        missing_values=missing
-    )
-    load(df, name)
+        for table_name, df in tables.items():
+            try:
+                logger.info(f"Processing {table_name}")
+
+                before = len(df)
+
+                df, duplicates_removed, missing = transform(df, table_name)
+
+                after = len(df)
+
+                report(
+                    table_name,
+                    before,
+                    after,
+                    duplicates_removed,
+                    missing
+                )
+
+                load(df, table_name)
+
+                logger.info(f"{table_name} completed")
+
+            except Exception:
+                logger.exception(
+                    f"Failed while processing table '{table_name}'"
+                )
+
+        logger.info("ETL finished.")
+
+    except Exception:
+        logger.exception("Pipeline failed completely")
+
+
+if __name__ == "__main__":
+    main()

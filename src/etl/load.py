@@ -1,39 +1,40 @@
-import pandas as pd
-from sqlalchemy import create_engine
+
+from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
+
 from .logger import logger
 
 # Подключение к PostgreSQL
+
 engine = create_engine(
     "postgresql+psycopg2://postgres:aqqnoor2005@localhost:5433/formula1"
 )
 
-
 def load(df, table_name):
-    """
-    Загружает DataFrame в PostgreSQL.
-    """
 
     try:
 
-        logger.info(f"Loading table: {table_name}")
+        with engine.begin() as conn:
+
+            conn.execute(
+                text(f"TRUNCATE TABLE {table_name} RESTART IDENTITY CASCADE")
+            )
 
         df.to_sql(
-            name=table_name,
-            con=engine,
-            if_exists="append",
+            table_name,
+            engine,
             index=False,
-            chunksize=1000,
-            method="multi"
+            if_exists="append",
+            chunksize=1,
+            method=None
         )
 
-        
-
-        logger.info(f"{table_name} loaded successfully")
-
     except SQLAlchemyError as error:
+        logger.error(f"Ошибка при загрузке таблицы '{table_name}'")
 
-        logger.error(f"Error while loading {table_name}")
-        logger.error(error)
+        if hasattr(error, "orig"):
+            logger.error(error.orig)
+        else:
+            logger.error(error)
 
         raise

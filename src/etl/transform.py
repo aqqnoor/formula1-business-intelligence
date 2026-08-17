@@ -2,7 +2,19 @@ import re
 import pandas as pd
 from .logger import logger
 
-
+PRIMARY_KEYS = {
+    "drivers": "driver_id",
+    "constructors": "constructor_id",
+    "circuits": "circuit_id",
+    "races": "race_id",
+    "results": "result_id",
+    "qualifying": "qualify_id",
+    "status": "status_id",
+    "driver_standings": "driver_standings_id",
+    "constructor_results": "constructor_results_id",
+    "constructor_standings": "constructor_standings_id",
+    "sprint_results": "result_id",
+}
 def camel_to_snake(name):
     return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
 
@@ -90,7 +102,7 @@ def validate_positive(df, columns):
     return df
 
 
-def transform(df):
+def transform(df, table_name):
 
     df = convert_types(df)
 
@@ -107,8 +119,10 @@ def transform(df):
 
     missing = check_missing(df)
 
-    if "driver_id" in df.columns:
-        validate_primary_key(df, "driver_id")
+    pk = PRIMARY_KEYS.get(table_name)
+
+    if pk and pk in df.columns:
+        validate_primary_key(df, pk)
 
     validate_positive(
         df,

@@ -1,7 +1,7 @@
 from pathlib import Path
 import pandas as pd
 
-
+from .logger import logger
 def extract(path):
 
     load_order = [

@@ -185,3 +185,6 @@ create table sprint_results(
     fastest_lap_time varchar(255),
     fastest_lap_speed NUMERIC(6,3)
 );
+
+ALTER TABLE races
+ADD COLUMN race_time time;

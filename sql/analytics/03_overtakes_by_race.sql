@@ -29,15 +29,25 @@ races
 */
 
 SELECT
-    ra.year,
     ra.name AS grand_prix,
+    COUNT(DISTINCT ra.race_id) AS races_held,
     SUM(
         CASE
             WHEN r.grid > r.position_order
             THEN r.grid - r.position_order
             ELSE 0
         END
-    ) AS total_overtakes
+    ) AS total_overtakes,
+    ROUND(
+        AVG(
+            CASE
+                WHEN r.grid > r.position_order
+                THEN r.grid - r.position_order
+                ELSE 0
+            END
+        ),
+        2
+    ) AS avg_overtakes_per_driver
 FROM results r
 JOIN races ra
     ON r.race_id = ra.race_id
@@ -45,7 +55,6 @@ WHERE
     r.grid > 0
     AND r.position_order > 0
 GROUP BY
-    ra.year,
     ra.name
 ORDER BY
-    total_overtakes DESC;
+    total_overtakes DESC limit 1;

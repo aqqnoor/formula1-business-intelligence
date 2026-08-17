@@ -1,5 +1,3 @@
-SELECT * FROM drivers LIMIT 10;
-
-SELECT * FROM races LIMIT 10;
-
-SELECT COUNT(*) FROM results;
+SELECT column_name
+FROM information_schema.columns
+WHERE table_name='races';
