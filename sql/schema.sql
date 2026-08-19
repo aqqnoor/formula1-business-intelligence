@@ -1,190 +1,185 @@
--- ====================================
--- Formula 1 Analytics Database
--- Schema Definition
--- ====================================
+-- Formula 1 Business Intelligence database schema.
+-- Source: Formula 1 World Championship historical CSV dataset (1950-2024).
 
--- сезоны
-create table seasons(
-    year int not null primary key,
-    url text not null
+DROP TABLE IF EXISTS
+    pit_stops,
+    lap_times,
+    sprint_results,
+    results,
+    qualifying,
+    driver_standings,
+    constructor_standings,
+    constructor_results,
+    races,
+    status,
+    constructors,
+    drivers,
+    circuits,
+    seasons
+CASCADE;
+
+CREATE TABLE seasons (
+    year INT PRIMARY KEY,
+    url TEXT NOT NULL
 );
 
--- трассы
-create table circuits(
-    circuit_id int not null primary key,
-    circuit_ref varchar(50) not null unique,
-    name varchar(100) not null,
-    location varchar(255) not null,
-    country varchar(100) not null,
-    lat NUMERIC(9,6) not null,
-    lng NUMERIC(9,6) not null,
-    alt int,
-    url text not null
+CREATE TABLE circuits (
+    circuit_id INT PRIMARY KEY,
+    circuit_ref VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    lat NUMERIC(9,6) NOT NULL,
+    lng NUMERIC(9,6) NOT NULL,
+    alt INT,
+    url TEXT NOT NULL
 );
 
--- гонщики
-create table drivers(
-    driver_id int not null primary key,
-    driver_ref varchar(50) not null unique,
-    number int,
-    code varchar(3),
-    forename varchar(100) not null,
-    surname varchar(100) not null,
-    dob date not null,
-    nationality varchar(100) not null,
-    url text not null
-
+CREATE TABLE drivers (
+    driver_id INT PRIMARY KEY,
+    driver_ref VARCHAR(50) NOT NULL UNIQUE,
+    number INT,
+    code VARCHAR(3),
+    forename VARCHAR(100) NOT NULL,
+    surname VARCHAR(100) NOT NULL,
+    dob DATE NOT NULL,
+    nationality VARCHAR(100) NOT NULL,
+    url TEXT NOT NULL
 );
 
--- конструкторы
-create table constructors(
-    constructor_id int not null primary key,
-    constructor_ref varchar(50) not null unique,
-    name varchar(255) not null,
-    nationality varchar(100) not null,
-    url text not null
+CREATE TABLE constructors (
+    constructor_id INT PRIMARY KEY,
+    constructor_ref VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    nationality VARCHAR(100) NOT NULL,
+    url TEXT NOT NULL
 );
 
--- статусы гонщиков
-create table status(
-    status_id int not null primary key,
-    status varchar(255) not null
+CREATE TABLE status (
+    status_id INT PRIMARY KEY,
+    status VARCHAR(255) NOT NULL
 );
 
--- гонки
-create table races(
-    race_id int not null primary key,
-    year int references seasons(year),
-    round int not null,
-    circuit_id int references circuits(circuit_id),
-    name varchar(255) not null,
-    date date not null,
-    url text not null,
-    fp1_date date,
-    fp1_time time,
-    fp2_date date,
-    fp2_time time,
-    fp3_date date,
-    fp3_time time,
-    quali_date date,
-    quali_time time,
-    sprint_date date,
-    sprint_time time
+CREATE TABLE races (
+    race_id INT PRIMARY KEY,
+    year INT REFERENCES seasons(year),
+    round INT NOT NULL,
+    circuit_id INT REFERENCES circuits(circuit_id),
+    name VARCHAR(255) NOT NULL,
+    date DATE NOT NULL,
+    race_time TIME,
+    url TEXT NOT NULL,
+    fp1_date DATE,
+    fp1_time TIME,
+    fp2_date DATE,
+    fp2_time TIME,
+    fp3_date DATE,
+    fp3_time TIME,
+    quali_date DATE,
+    quali_time TIME,
+    sprint_date DATE,
+    sprint_time TIME
 );
 
--- результаты гонок
-create table results(
-    result_id int not null primary key,
-    race_id int  references races(race_id),
-    driver_id int  references drivers(driver_id),
-    constructor_id int  references constructors(constructor_id),
-    status_id int  references status(status_id),
-    number int not null,
-    grid int not null,
-    position int,
-    position_text varchar(255),
-    position_order int,
-    points NUMERIC(5,1) not null,
-    laps int not null,
-    race_time varchar(255),
-    milliseconds bigint,
-    fastest_lap int,
-    fastest_lap_rank int,
-    fastest_lap_time varchar(255),
+CREATE TABLE results (
+    result_id INT PRIMARY KEY,
+    race_id INT REFERENCES races(race_id),
+    driver_id INT REFERENCES drivers(driver_id),
+    constructor_id INT REFERENCES constructors(constructor_id),
+    status_id INT REFERENCES status(status_id),
+    number INT,
+    grid INT NOT NULL,
+    position INT,
+    position_text VARCHAR(255),
+    position_order INT,
+    points NUMERIC(5,1) NOT NULL,
+    laps INT NOT NULL,
+    race_time VARCHAR(255),
+    milliseconds BIGINT,
+    fastest_lap INT,
+    fastest_lap_rank INT,
+    fastest_lap_time VARCHAR(255),
     fastest_lap_speed NUMERIC(6,3)
 );
 
--- результаты кругов
-create table lap_times(
-    race_id int  references races(race_id),
-    driver_id int  references drivers(driver_id),
-    lap int not null,
-    position int,
-    race_time varchar(255),
-    milliseconds bigint,
-
+CREATE TABLE lap_times (
+    race_id INT REFERENCES races(race_id),
+    driver_id INT REFERENCES drivers(driver_id),
+    lap INT NOT NULL,
+    position INT,
+    race_time VARCHAR(255),
+    milliseconds BIGINT,
     PRIMARY KEY (race_id, driver_id, lap)
-
 );
 
--- результаты пит-стопов
-create table pit_stops(
-    race_id int  references races(race_id),
-    driver_id int  references drivers(driver_id),
-    stop int not null,
-    lap int not null,
-    race_time varchar(255),
-    duration varchar(255) not null,
-    milliseconds bigint not null,
+CREATE TABLE pit_stops (
+    race_id INT REFERENCES races(race_id),
+    driver_id INT REFERENCES drivers(driver_id),
+    stop INT NOT NULL,
+    lap INT NOT NULL,
+    race_time VARCHAR(255),
+    duration VARCHAR(255) NOT NULL,
+    milliseconds BIGINT NOT NULL,
     PRIMARY KEY (race_id, driver_id, stop)
 );
 
--- результаты квалификаций
-create table qualifying(
-    qualify_id int not null primary key,
-    race_id int  references races(race_id),
-    driver_id int  references drivers(driver_id),
-    constructor_id int references constructors(constructor_id),
-    number int not null,
-    position int,
-    q1 varchar(255),
-    q2 varchar(255),
-    q3 varchar(255)
+CREATE TABLE qualifying (
+    qualify_id INT PRIMARY KEY,
+    race_id INT REFERENCES races(race_id),
+    driver_id INT REFERENCES drivers(driver_id),
+    constructor_id INT REFERENCES constructors(constructor_id),
+    number INT NOT NULL,
+    position INT,
+    q1 VARCHAR(255),
+    q2 VARCHAR(255),
+    q3 VARCHAR(255)
 );
 
--- результаты чемпионатов
-create table driver_standings(
-    driver_standings_id int not null primary key,
-    race_id int  references races(race_id),
-    driver_id int  references drivers(driver_id),
-    points NUMERIC(5,1) not null,
-    position int,
-    position_text varchar(255),
-    wins int not null
-
+CREATE TABLE driver_standings (
+    driver_standings_id INT PRIMARY KEY,
+    race_id INT REFERENCES races(race_id),
+    driver_id INT REFERENCES drivers(driver_id),
+    points NUMERIC(5,1) NOT NULL,
+    position INT,
+    position_text VARCHAR(255),
+    wins INT NOT NULL
 );
 
--- результаты командных чемпионатов
-create table constructor_results(
-    constructor_results_id int not null primary key,
-    race_id int  references races(race_id),
-    constructor_id int  references constructors(constructor_id),
-    points NUMERIC(5,1) not null,
-    status varchar(255) not null
+CREATE TABLE constructor_results (
+    constructor_results_id INT PRIMARY KEY,
+    race_id INT REFERENCES races(race_id),
+    constructor_id INT REFERENCES constructors(constructor_id),
+    points NUMERIC(5,1) NOT NULL,
+    status VARCHAR(255)
 );
 
--- рейтинги командных чемпионатов
-create table constructor_standings(
-    constructor_standings_id int not null primary key,
-    race_id int  references races(race_id),
-    constructor_id int  references constructors(constructor_id),
-    points NUMERIC(5,1) not null,
-    position int ,
-    position_text varchar(255),
-    wins int not null
+CREATE TABLE constructor_standings (
+    constructor_standings_id INT PRIMARY KEY,
+    race_id INT REFERENCES races(race_id),
+    constructor_id INT REFERENCES constructors(constructor_id),
+    points NUMERIC(5,1) NOT NULL,
+    position INT,
+    position_text VARCHAR(255),
+    wins INT NOT NULL
 );
 
--- результаты спринтов
-create table sprint_results(
-    result_id int not null primary key,
-    race_id int  references races(race_id),
-    driver_id int  references drivers(driver_id),
-    constructor_id int  references constructors(constructor_id),
-    status_id int  references status(status_id),
-    number int not null,
-    grid int not null,
-    position int,
-    position_text varchar(255),
-    position_order int,
-    points NUMERIC(5,1) not null,
-    laps int not null,
-    race_time varchar(255),
-    milliseconds bigint,
-    fastest_lap int,
-    fastest_lap_rank int,
-    fastest_lap_time varchar(255),
+CREATE TABLE sprint_results (
+    result_id INT PRIMARY KEY,
+    race_id INT REFERENCES races(race_id),
+    driver_id INT REFERENCES drivers(driver_id),
+    constructor_id INT REFERENCES constructors(constructor_id),
+    status_id INT REFERENCES status(status_id),
+    number INT NOT NULL,
+    grid INT NOT NULL,
+    position INT,
+    position_text VARCHAR(255),
+    position_order INT,
+    points NUMERIC(5,1) NOT NULL,
+    laps INT NOT NULL,
+    race_time VARCHAR(255),
+    milliseconds BIGINT,
+    fastest_lap INT,
+    fastest_lap_rank INT,
+    fastest_lap_time VARCHAR(255),
     fastest_lap_speed NUMERIC(6,3)
 );
-
-ALTER TABLE races
-ADD COLUMN race_time time;

@@ -7,7 +7,7 @@ from .logger import logger
 # Подключение к PostgreSQL
 
 engine = create_engine(
-    "postgresql+psycopg2://postgres:aqqnoor2005@localhost:5433/formula1"
+    "postgresql+psycopg2://aqqnoor@localhost:5432/formula1"
 )
 
 def load(df, table_name):
